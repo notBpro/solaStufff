@@ -7,6 +7,8 @@ from shapely.prepared import prep
 from shapely.ops import transform
 import pyproj
 
+#expected loss yearly for policy = .0702 * $10,000 = $702 per year
+
 # Min distance ensures d=0 for points inside storm polygons (actual impact),
 # while blurring uncertainty for points outside (potential future impact).
 
@@ -29,20 +31,6 @@ def min_distance_m(point: Point, poly) -> float:
     
     # Calculate distance (already in meters due to projected CRS)
     return point.distance(poly)
-
-# def centroid_distance_m(point: Point, poly) -> float:
-#     """
-#     Calculate the distance in meters from a point to the centroid of a polygon.
-    
-#     Args:
-#         point: shapely.geometry.Point (must be in projected CRS with meter units)
-#         poly: shapely.geometry.Polygon or MultiPolygon (must be in same CRS as point)
-    
-#     Returns:
-#         Distance in meters from point to polygon's centroid
-#     """
-#     centroid = poly.centroid
-#     return point.distance(centroid)
 
 def calculate_storm_probability(storms_by_year, p, h):
     """
@@ -71,8 +59,7 @@ def calculate_storm_probability(storms_by_year, p, h):
     number_of_years = len(storms_by_year)
     
     # For each year Y in storms_by_year
-    for year, storms in storms_by_year.items():
-        # Initialize yearly sum (total "paint" from all storms this year)
+    for year, storms in storms_by_year.items(): #(year, [storm_poly1, storm_poly2, ...])
         yearly_sum = 0
 
         # For each storm S in year Y
@@ -140,21 +127,20 @@ if __name__ == "__main__":
     np.random.seed(69)  # For reproducibility
     random_points = [(np.random.uniform(min_lon, max_lon), 
                       np.random.uniform(min_lat, max_lat)) 
-                     for _ in range(num_points)]
+                     for _ in range(num_points)] # selects a lon and lat for each point and adds it to random_points
     
     # # Blur distance in meters
     h = 30000  # 30km blur, larger h means more blurring
     
     # Calculate probability for each point and average
-    probabilities = []
-    for i, p in enumerate(random_points):
-        probability = calculate_storm_probability(storms_by_year, p, h)
-        probabilities.append(probability)
-        print(f"Point {i+1}/{num_points} at {p}: {probability:.6f}")
+    # probabilities = []
+    # for i, p in enumerate(random_points):
+    #     probability = calculate_storm_probability(storms_by_year, p, h)
+    #     probabilities.append(probability)
+    #     print(f"Point {i+1}/{num_points} at {p}: {probability:.6f}")
     
-    # Calculate and print average
-    avg_probability = np.mean(probabilities)
-    print(f"\nAverage probability across {num_points} random points: {avg_probability:.6f}")
+    # avg_probability = np.mean(probabilities)
+    # print(f"\nAverage probability across {num_points} random points: {avg_probability:.6f}")
 
     point = (-96.7838, 32.7839)
     probability = calculate_storm_probability(storms_by_year, point, h)

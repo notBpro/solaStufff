@@ -32,12 +32,13 @@ for storms in storms_by_year.values():
 # Set up projection for accurate area calculation
 wgs84 = pyproj.CRS('EPSG:4326')
 albers = pyproj.CRS('ESRI:102003')
+#project is a function that takes in x,y in lon, lat and returns x,y in meters
 project = pyproj.Transformer.from_crs(wgs84, albers, always_xy=True).transform
 
 # Calculate region area
 # print(min_lon, min_lat, max_lon, max_lat)
 region_box = box(min_lon, min_lat, max_lon, max_lat)
-region_area = transform(project, region_box).area
+region_area = transform(project, region_box).area # have to convert before square degrees is meaningless
 
 # Calculate total storm area for each year
 yearly_storm_areas = []
